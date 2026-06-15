@@ -1,0 +1,22 @@
+# Credenciales y configuración sensible
+conexion.php
+.env
+
+# Cache
+cache/
+
+# SQL dumps (datos de producción)
+tablas.sql
+*.sql
+!schema.sql
+
+# Imágenes de periódicos (copyright)
+img/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
