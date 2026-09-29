@@ -110,9 +110,9 @@ Accede a `index.php` para gestionar localidades y lanzar capturas desde la inter
 | API | Uso | Auth |
 |-----|-----|------|
 | [AEMET OpenData](https://opendata.aemet.es/) | Predicción meteorológica España | API Key (gratis) |
-| [Open-Meteo](https://open-meteo.com/) | Datos históricos y forecast | Sin auth |
-| [wttr.in](https://wttr.in/) | Fallback meteorológico mundial | Sin auth |
-| [Puertos del Estado](https://www.puertos.es/) | Mareas, oleaje, viento costero | Sin auth |
+| [Open-Meteo](https://open-meteo.com/) | Datos históricos y forecast | API Key (gratis) |
+| [wttr.in](https://wttr.in/) | Fallback meteorológico mundial | API Key (gratis) |
+| [Puertos del Estado](https://www.puertos.es/) | Mareas, oleaje, viento costero | API Key (gratis) + Scraping |
 | [112 Asturias](https://www.112asturias.es/) | Índice de incendios | Scraping |
 
 ## Licencia
