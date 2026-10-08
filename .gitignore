@@ -1,16 +1,24 @@
 # Credenciales y configuración sensible
 conexion.php
 .env
+.env.*
+!.env.example
 
-# Cache
+# Cache y archivos temporales
 cache/
+*.log
+*.tmp
 
-# SQL dumps (datos de producción)
+# XML/JSON generados por las capturas y exportadores
+*.xml
+*.json
+
+# SQL dumps con datos de producción
 tablas.sql
 *.sql
 !schema.sql
 
-# Imágenes de periódicos (copyright)
+# Imágenes de periódicos / contenido generado
 img/
 
 # IDE
@@ -20,3 +28,6 @@ img/
 # OS
 Thumbs.db
 .DS_Store
+
+# Dependencias
+vendor/
