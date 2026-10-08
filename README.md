@@ -20,27 +20,31 @@ Plataforma en PHP para **capturar, normalizar y exportar información meteoroló
 
 ## Arquitectura
 
+El proyecto mantiene los scripts PHP existentes como puntos de entrada para no romper automatizaciones actuales, pero la infraestructura común ya está separada en:
+
 ```text
-ClimaTrack/
-├── index.php
-├── capturar_*.php
-├── exportar_*.php
-├── get_*.php
-├── periodicos_mapping.php
-├── refranes_helper.php
-├── conexion.example.php
-├── schema.sql
-├── styles.css
-├── iconos/
-├── .env.example
-├── .github/workflows/ci.yml
-├── SECURITY.md
-└── CONTRIBUTING.md
+app/
+├── Cache/
+│   └── FileCache.php
+├── Config/
+│   └── Config.php
+├── Database/
+│   └── Database.php
+├── Http/
+│   └── HttpClient.php
+└── Services/
+    ├── WeatherStateMapper.php
+    └── WttrService.php
+
+bootstrap.php
+tests/
+├── CacheTest.php
+├── HttpClientTest.php
+└── run.php
 ```
 
-Los scripts de `capturar_*.php` adquieren y almacenan datos. Los `exportar_*.php` transforman esos datos y generan XML. La configuración editorial se concentra actualmente en `periodicos_mapping.php`.
+Las nuevas piezas centralizan timeouts HTTP, validación de respuestas, configuración, caché y conexión PDO. El capturador de ciudades del mundo ya utiliza esta arquitectura mediante `WttrService`, manteniendo sus URLs y parámetros actuales.
 
-La siguiente evolución técnica es separar clientes HTTP, caché, persistencia y transformadores para reducir duplicación entre scripts.
 
 ## Requisitos
 
