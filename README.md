@@ -1,120 +1,183 @@
-# ClimaTrack 🌦️
+# ClimaTrack
 
-Sistema de captura y exportación de datos meteorológicos para periódicos españoles. Obtiene predicciones de la API de AEMET, datos marítimos de Puertos del Estado, y genera XMLs personalizados para cada publicación.
+Plataforma en PHP para **capturar, normalizar y exportar información meteorológica** destinada a flujos editoriales de prensa. Integra varias fuentes externas, persiste los datos en MySQL/MariaDB y genera XML adaptados a diferentes cabeceras.
 
-## Características
+> Proyecto personal/educativo orientado a automatización de datos meteorológicos y generación de contenido estructurado.
 
-- 🌡️ **Predicción meteorológica** — Captura datos de AEMET OpenData con fallback a wttr.in
-- 🌊 **Mareas y oleaje** — Datos en tiempo real de Puertos del Estado (POEM/Portus)
-- 🌙 **Datos astronómicos** — Cálculo de fases lunares, orto/ocaso solar y lunar
-- 🔥 **Índice de incendios** — Scraping del 112 Asturias
-- 💧 **Embalses** — Nivel de embalses de Navarra
-- 🗺️ **Multi-periódico** — XMLs personalizados con iconos específicos para cada cabecera
-- ⏱️ **Cache inteligente** — Sistema de caché para evitar llamadas excesivas a las APIs
+## Funcionalidades
+
+- **AEMET OpenData**: predicciones meteorológicas para municipios españoles.
+- **wttr.in**: previsiones y fallback para determinadas capturas.
+- **Puertos del Estado / Portus**: mareas, oleaje, viento y temperatura del agua.
+- **Open-Meteo**: previsión y datos históricos utilizados en resúmenes.
+- **112 Asturias**: extracción del índice de riesgo de incendios.
+- **Embalses**: captura de información de embalses configurados.
+- **Astronomía**: fases lunares y horas de orto/ocaso.
+- **Multi-periódico**: mapas de localidades, puertos e iconografía específicos.
+- **Caché**: evita llamadas repetidas durante intervalos configurados.
+- **Exportación XML**: transforma datos a formatos consumibles por sistemas editoriales.
+- **Panel web**: selección de periódicos y lanzamiento de procesos.
+
+## Arquitectura
+
+```text
+ClimaTrack/
+├── index.php
+├── capturar_*.php
+├── exportar_*.php
+├── get_*.php
+├── periodicos_mapping.php
+├── refranes_helper.php
+├── conexion.example.php
+├── schema.sql
+├── styles.css
+├── iconos/
+├── .env.example
+├── .github/workflows/ci.yml
+├── SECURITY.md
+└── CONTRIBUTING.md
+```
+
+Los scripts de `capturar_*.php` adquieren y almacenan datos. Los `exportar_*.php` transforman esos datos y generan XML. La configuración editorial se concentra actualmente en `periodicos_mapping.php`.
+
+La siguiente evolución técnica es separar clientes HTTP, caché, persistencia y transformadores para reducir duplicación entre scripts.
 
 ## Requisitos
 
-- PHP 7.4+ con extensiones: `curl`, `pdo_mysql`, `simplexml`, `mbstring`
-- MySQL / MariaDB
-- Servidor web (Apache/Nginx) o CLI
+- PHP **8.2+** recomendado.
+- Extensiones: `curl`, `dom`, `mbstring`, `pdo_mysql`, `simplexml`.
+- MySQL o MariaDB.
+- Apache, Nginx o ejecución mediante CLI.
+- Acceso a Internet para las fuentes externas.
 
 ## Instalación
 
-1. **Clonar el repositorio**
-   ```bash
-   git clone https://github.com/tu-usuario/ClimaTrack.git
-   cd ClimaTrack
-   ```
+### 1. Clonar
 
-2. **Configurar base de datos**
-   ```bash
-   cp conexion.example.php conexion.php
-   ```
-   Edita `conexion.php` con tus credenciales de MySQL.
+```bash
+git clone https://github.com/alannietox/ClimaTrack.git
+cd ClimaTrack
+```
 
-3. **Crear las tablas**
-   Importa el esquema de base de datos:
-   ```bash
-   mysql -u tu_usuario -p tu_base_de_datos < schema.sql
-   ```
+### 2. Configurar la base de datos
 
-4. **Configurar API Key de AEMET**
-   
-   Obtén tu clave gratuita en [AEMET OpenData](https://opendata.aemet.es/centrodedescargas/altaUsuario).
-   
-   Opción A — Variable de entorno:
-   ```bash
-   export AEMET_API_KEY="tu_api_key"
-   ```
-   
-   Opción B — Editar directamente en `capturar_aemet.php` y `capturar_resumen_navarra.php`.
+```bash
+cp conexion.example.php conexion.php
+```
+
+Variables disponibles:
+
+```text
+DB_HOST=localhost
+DB_NAME=climatrack
+DB_USER=usuario
+DB_PASSWORD=contraseña
+DB_CHARSET=utf8mb4
+```
+
+Importar el esquema:
+
+```bash
+mysql -u usuario -p climatrack < schema.sql
+```
+
+### 3. Configurar AEMET
+
+Configura `AEMET_API_KEY` con una clave de AEMET OpenData. Consulta `.env.example` para el resto de variables.
+
+**No introduzcas credenciales reales en Git.**
 
 ## Uso
 
-### Captura de datos (CLI)
+### Capturas
+
 ```bash
-# Capturar datos meteorológicos de todas las localidades
 php capturar_aemet.php
-
-# Capturar datos de un periódico específico
-php capturar_aemet.php periodico=diario_montanes_cantabria
-
-# Capturar resumen del País Vasco
-php capturar_resumen_vasco.php
-
-# Capturar datos de Navarra
+php capturar_mundo.php
+php capturar_resumen.php
 php capturar_resumen_navarra.php
+php capturar_resumen_vasco.php
+php capturar_embalses.php
+php capturar_incendios.php
 ```
 
-### Exportación XML (Web)
-```
-GET /exportar_clima.php?periodico=diario_montanes_cantabria
-GET /exportar_mareas.php?periodico=el_comercio_asturias
-GET /exportar_incendios_periodico.php
-GET /exportar_embalses_navarra.php
-```
+### Exportación
 
-### Panel de control
-Accede a `index.php` para gestionar localidades y lanzar capturas desde la interfaz web.
+Ejemplos:
 
-## Estructura del proyecto
-
-```
-├── index.php                       # Panel de control web
-├── conexion.example.php            # Plantilla de conexión a BD
-├── capturar_aemet.php              # Captura datos de AEMET
-├── capturar_mundo.php              # Captura datos internacionales (wttr.in)
-├── capturar_resumen_navarra.php    # Captura resumen Navarra
-├── capturar_resumen_vasco.php      # Captura resumen País Vasco
-├── capturar_embalses.php           # Captura niveles de embalses
-├── capturar_incendios.php          # Captura índice de incendios
-├── exportar_clima.php              # Genera XML del clima
-├── exportar_mareas.php             # Genera XML de mareas y viento
-├── exportar_incendios_periodico.php # Genera XML de incendios
-├── exportar_embalses_navarra.php   # Genera XML de embalses
-├── exportar_resumen_especial.php   # Genera XML resumen especial
-├── exportar_resumen_navarra.php    # Genera XML resumen Navarra
-├── exportar_resumen_vasco.php      # Genera XML resumen vasco
-├── periodicos_mapping.php          # Mapeo periódicos → localidades
-├── refranes_helper.php             # Refranes del tiempo por fecha
-├── get_municipios_periodico.php    # API de municipios por periódico
-├── get_ultima_captura.php          # Comprueba última captura
-├── limpiar_cache.php               # Limpia caché de capturas
-├── styles.css                      # Estilos del panel de control
-├── schema.sql                      # Esquema de base de datos
-└── iconos/                         # Sets de iconos meteorológicos
+```text
+/exportar_clima.php?periodico=diario_montanes_cantabria
+/exportar_mareas.php?periodico=el_comercio_asturias
+/exportar_incendios_periodico.php?periodico=el_comercio_asturias
+/exportar_embalses_navarra.php
 ```
 
-## APIs utilizadas
+## Fuentes de datos
 
-| API | Uso | Auth |
-|-----|-----|------|
-| [AEMET OpenData](https://opendata.aemet.es/) | Predicción meteorológica España | API Key (gratis) |
-| [Open-Meteo](https://open-meteo.com/) | Datos históricos y forecast | API Key (gratis) |
-| [wttr.in](https://wttr.in/) | Fallback meteorológico mundial | API Key (gratis) |
-| [Puertos del Estado](https://www.puertos.es/) | Mareas, oleaje, viento costero | API Key (gratis) + Scraping |
-| [112 Asturias](https://www.112asturias.es/) | Índice de incendios | Scraping |
+| Fuente | Función | Integración |
+|---|---|---|
+| AEMET OpenData | Predicción española | API REST |
+| Open-Meteo | Forecast / histórico | API REST |
+| wttr.in | Forecast / fallback | API REST |
+| Puertos del Estado | Mareas, oleaje y datos marítimos | API REST |
+| 112 Asturias | Riesgo de incendios | Scraping HTML |
+| Embalses configurados | Estado de embalses | Scraping HTML |
+
+Las fuentes externas pueden cambiar sus respuestas. Los capturadores deben considerar errores de red y cambios de formato como condiciones esperables.
+
+## Base de datos
+
+Principales tablas:
+
+- `localidades`: municipios y coordenadas.
+- `datos_clima`: previsiones y variables meteorológicas.
+- `ciudades_mundo`: ciudades internacionales.
+- `datos_mundo`: previsiones internacionales.
+- `embalses`: estado de embalses.
+- `resumen_vasco`: datos del resumen costero vasco.
+
+El esquema completo está en `schema.sql`.
+
+## Calidad y CI
+
+Cada push y pull request contra `main` ejecuta GitHub Actions para:
+
+1. Instalar PHP 8.2 y las extensiones necesarias.
+2. Ejecutar `php -l` sobre todos los archivos PHP.
+3. Verificar archivos y directorios esenciales.
+
+Comprobación local:
+
+```bash
+find . -type f -name "*.php" -not -path "./vendor/*" -exec php -l {} \;
+```
+
+## Seguridad
+
+Las credenciales y la configuración local no forman parte del repositorio.
+
+Consulta `SECURITY.md` para las recomendaciones de despliegue y gestión de secretos.
+
+## Limitaciones conocidas
+
+- Algunas fuentes utilizan scraping y pueden cambiar su HTML.
+- Existen reglas específicas por periódico concentradas en scripts grandes.
+- Parte de la configuración editorial está representada mediante arrays PHP.
+- Todavía no hay una suite automatizada de tests de integración contra APIs externas.
+
+## Roadmap
+
+- [x] Separar configuración sensible del código.
+- [x] Añadir validación automática de sintaxis PHP.
+- [x] Documentar configuración y seguridad.
+- [ ] Crear un cliente HTTP común con timeouts y validación de respuestas.
+- [ ] Centralizar el sistema de caché.
+- [ ] Separar captura, transformación y persistencia.
+- [ ] Añadir tests unitarios para mapeos meteorológicos.
+- [ ] Añadir tests de generación XML.
+- [ ] Reducir lógica duplicada entre exportadores.
+- [ ] Añadir logging estructurado.
 
 ## Licencia
 
-Este proyecto es de uso personal/educativo.
+Proyecto de uso personal/educativo. Las fuentes externas, datos y recursos gráficos mantienen sus respectivas condiciones de uso.
