@@ -5,7 +5,8 @@ require dirname(__DIR__) . '/bootstrap.php';
 
 use ClimaTrack\Http\HttpClient;
 
-$client = new HttpClient();
-assert($client instanceof HttpClient);
+if (!(new HttpClient() instanceof HttpClient)) {
+    throw new RuntimeException('No se pudo crear HttpClient.');
+}
 
 echo "HttpClient: OK\n";
