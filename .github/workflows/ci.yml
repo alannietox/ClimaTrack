@@ -25,6 +25,9 @@ jobs:
           extensions: curl, dom, mbstring, pdo_mysql, simplexml
           coverage: none
 
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist
+
       - name: Validate PHP files
         shell: bash
         run: |
@@ -33,6 +36,9 @@ jobs:
             echo "Checking $file"
             php -l "$file"
           done < <(find . -type f -name '*.php'             -not -path './vendor/*'             -print0)
+
+      - name: Run tests
+        run: composer test
 
       - name: Validate project structure
         run: |
