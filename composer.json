@@ -1,0 +1,17 @@
+{
+  "name": "alannietox/climatrack",
+  "description": "Plataforma PHP para captura, normalización y exportación de datos meteorológicos.",
+  "type": "project",
+  "require": {
+    "php": "^8.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "ClimaTrack\\": "app/"
+    }
+  },
+  "scripts": {
+    "test": "@php tests/run.php",
+    "lint": "find . -type f -name '*.php' -not -path './vendor/*' -exec php -l {} \\;"
+  }
+}
